@@ -7,24 +7,20 @@ from nltk.tokenize import word_tokenize
 from sklearn.feature_extraction.text import TfidfVectorizer
 import nltk
 
-# Download NLTK resources
 nltk.download('punkt')
 nltk.download('stopwords')
 nltk.download('wordnet')
 
-# Initialize Flask app
+
 app = Flask(__name__)
 
-# Load pre-trained models
 nb_model = load('./models/nb.joblib')
 lr_model = load('./models/lr.joblib')
 dt_model = load('./models/dt.joblib')
 rf_model = load('./models/rf.joblib')
 
-# Load TF-IDF vectorizer
-tfidf = load('tfidf_vectorizer.joblib')  # Ensure to save and load the same TF-IDF used during training
+tfidf = load('tfidf_vectorizer.joblib')  
 
-# Define preprocessing functions
 leet_dict = {
     '@': 'a', '$': 's', '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', '7': 't', '!': 'i'
 }
@@ -61,18 +57,16 @@ def home():
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    data = request.json  # Expecting JSON input with a 'text' field
+    data = request.json  
     input_text = data.get('text')
     if not input_text:
         return jsonify({"error": "No text provided"}), 400
     try:
-        # Preprocess the input text
+
         processed_text = preprocess_text_advanced(input_text)
 
-        # Transform the text using the loaded TF-IDF vectorizer
         text_vector = tfidf.transform([processed_text])
         print(text_vector)
-        # Get predictions from all models
         predictions = {
             "NaiveBayes": nb_model.predict(text_vector)[0],
             "LogisticRegression": lr_model.predict(text_vector)[0],
